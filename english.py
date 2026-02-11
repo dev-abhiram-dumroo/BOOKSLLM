@@ -1,20 +1,19 @@
-import tomllib
+import os
 from supabase import create_client, Client
 from deep_translator import GoogleTranslator
 import time
 import random
-from dotenv import load_dotenv  # NEW
+from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
-# ---------- LOAD SUPABASE CREDS ----------
-SECRETS_PATH = r"D:\automated booksllm\secrets.toml"
 
-with open(SECRETS_PATH, "rb") as f:
-    secrets = tomllib.load(f)
+# ---------- LOAD SUPABASE CREDS FROM .env ----------
+URL = os.getenv("SUPABASE_URL")
+KEY = os.getenv("SUPABASE_KEY")
 
-URL = secrets["SUPABASE_URL"]
-KEY = secrets["SUPABASE_KEY"]
+if not URL or not KEY:
+    raise ValueError("Missing SUPABASE_URL or SUPABASE_KEY in .env file")
 
 supabase: Client = create_client(URL, KEY)
 
@@ -365,3 +364,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
 
         print("\n\nStopped by user.")
+
