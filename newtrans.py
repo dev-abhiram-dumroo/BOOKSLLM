@@ -12,8 +12,7 @@ from supabase import create_client, Client
 
 # ==================== CONFIGURATION ====================
 # Supabase Configuration
-SUPABASE_URL = "https://pljbnlqegnbslbhrripl.supabase.co"
-SUPABASE_KEY = "sb_secret_nnrvvSHYBXBm_JaXossxAQ_dQwGGRoJ"
+#keys
 TABLE_NAME = "shiv_puran_chunks"  # Your table name
 # LIGHTWEIGHT MODEL OPTIONS (Choose ONE):
 # 
@@ -418,4 +417,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
