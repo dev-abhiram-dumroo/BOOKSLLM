@@ -3,7 +3,10 @@ from supabase import create_client, Client
 from deep_translator import GoogleTranslator
 import time
 import random
+from dotenv import load_dotenv  # NEW
 
+# Load environment variables from .env file
+load_dotenv()
 # ---------- LOAD SUPABASE CREDS ----------
 SECRETS_PATH = r"D:\automated booksllm\secrets.toml"
 
@@ -360,4 +363,5 @@ if __name__ == "__main__":
     except ValueError:
         print("Invalid ID. Please enter a number.")
     except KeyboardInterrupt:
+
         print("\n\nStopped by user.")
