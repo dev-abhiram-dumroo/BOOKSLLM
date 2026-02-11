@@ -9,7 +9,10 @@ import json
 import re
 from typing import List, Dict
 import os
+from dotenv import load_dotenv  # NEW
 
+# Load environment variables from .env file
+load_dotenv()
 # Install required library first: pip install supabase
 from supabase import create_client, Client
 
@@ -206,3 +209,4 @@ def main():
 if __name__ == "__main__":
 
     main()
+
