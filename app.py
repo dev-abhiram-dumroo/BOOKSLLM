@@ -4,176 +4,43 @@ from sentence_transformers import SentenceTransformer
 from gtts import gTTS
 import tempfile
 import os
+import html  # Import for HTML escaping
 
 # --- CONFIGURATION ---
-st.set_page_config(page_title="BooksLLM - Shiv Puran Search", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Shiv Puran Search", layout="centered", initial_sidebar_state="collapsed")
 
-# Custom CSS with WHITE theme
+# Custom CSS for clean UI
 st.markdown("""
     <style>
-    /* Reset and Base */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
     .main {
-        padding: 0 !important;
-        max-width: 100% !important;
-        background: #ffffff !important;
+        padding-top: 2rem;
     }
-    
-    .block-container {
-        padding: 0 !important;
-        max-width: 100% !important;
-    }
-    
-    /* Force white background */
-    .stApp {
-        background: #ffffff !important;
-    }
-    
-    /* Hide Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* Navbar */
-    .navbar {
-        background: #3563f6;
-        color: white;
-        padding: 14px 40px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0;
-    }
-    
-    .logo {
-        font-size: 22px;
-        font-weight: bold;
-        color: white;
-    }
-    
-    .nav-links {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
-    
-    .nav-links a {
-        color: white;
-        text-decoration: none;
-        font-size: 14px;
-    }
-    
-    .signin-btn {
-        background: #ffbf47;
-        color: #000;
-        padding: 8px 16px;
-        border-radius: 20px;
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: bold;
-    }
-    
-    /* Hero Section */
-    .hero-container {
-        padding: 60px 80px;
-        max-width: 1400px;
-        margin: 0 auto;
-        background: #ffffff;
-    }
-    
-    .tag {
-        display: inline-block;
-        background: #eef2ff;
-        color: #3563f6;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 13px;
-        margin-bottom: 16px;
-        font-weight: 500;
-    }
-    
-    .hero-title {
-        font-size: 48px;
-        margin-bottom: 10px;
-        font-weight: bold;
-        color: #111111;
-    }
-    
-    .hero-title span {
-        color: #3563f6;
-    }
-    
-    .hero-description {
-        margin-top: 15px;
-        font-size: 16px;
-        line-height: 1.6;
-        color: #444444;
-        max-width: 600px;
-    }
-    
-    /* Search Box */
     .stTextInput > div > div > input {
-        padding: 14px;
-        font-size: 16px;
-        border-radius: 6px;
-        border: 1px solid #cccccc;
-        background: #ffffff !important;
-        color: #111111 !important;
+        font-size: 18px;
+        padding: 15px;
     }
-    
-    .stTextInput > div > div > input::placeholder {
-        color: #999999;
+    .search-container {
+        max-width: 800px;
+        margin: 0 auto;
     }
-    
-    .stButton > button {
-        padding: 14px 20px;
-        background: #3563f6 !important;
-        color: white !important;
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        width: 100%;
-        margin-top: 10px;
-        font-weight: 500;
-    }
-    
-    .stButton > button:hover {
-        background: #2952d9 !important;
-    }
-    
-    /* Results heading */
-    h3 {
-        color: #111111 !important;
-        font-weight: 600;
-    }
-    
-    /* Result Container */
     .result-container {
-        margin-top: 30px;
-        background: #f7f9fc;
-        padding: 25px;
+        background-color: #f8f9fa;
         border-radius: 10px;
-        border-left: 4px solid #3563f6;
+        padding: 25px;
+        margin-top: 30px;
+        border-left: 4px solid #FF6B35;
     }
-    
     .similarity-badge {
-        background: #3563f6;
+        background-color: #FF6B35;
         color: white;
         padding: 5px 15px;
         border-radius: 20px;
         font-size: 14px;
         display: inline-block;
         margin-bottom: 15px;
-        font-weight: 500;
     }
-    
     .chapter-badge {
-        background: #4ECDC4;
+        background-color: #4ECDC4;
         color: white;
         padding: 5px 15px;
         border-radius: 20px;
@@ -181,78 +48,6 @@ st.markdown("""
         display: inline-block;
         margin-bottom: 15px;
         margin-left: 10px;
-        font-weight: 500;
-    }
-    
-    .result-container strong {
-        color: #111111;
-    }
-    
-    .sanskrit-text {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
-        font-family: 'Courier New', monospace;
-        color: #333333;
-        border: 1px solid #e0e0e0;
-    }
-    
-    .english-text {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
-        line-height: 1.6;
-        color: #111111;
-        border: 1px solid #e0e0e0;
-    }
-    
-    /* Text color fixes */
-    p, div, span {
-        color: #111111;
-    }
-    
-    /* Warning and error messages */
-    .stAlert {
-        background: white !important;
-        color: #111111 !important;
-    }
-    
-    /* Expander */
-    .streamlit-expanderHeader {
-        background: white !important;
-        color: #111111 !important;
-    }
-    
-    .streamlit-expanderContent {
-        background: white !important;
-        color: #111111 !important;
-    }
-    
-    /* Code blocks in expander */
-    code {
-        background: #f5f5f5 !important;
-        color: #111111 !important;
-    }
-    
-    pre {
-        background: #f5f5f5 !important;
-        color: #111111 !important;
-    }
-    
-    @media(max-width: 900px) {
-        .hero-container {
-            padding: 40px 20px;
-        }
-        
-        .hero-title {
-            font-size: 36px;
-        }
-        
-        .navbar {
-            padding: 14px 20px;
-        }
     }
     </style>
 """, unsafe_allow_html=True)
@@ -273,7 +68,7 @@ def init_supabase():
 
 @st.cache_resource
 def load_sentence_transformer():
-    """Load sentence transformer model"""
+    """Load sentence transformer model - MUST match the model used for embeddings"""
     return SentenceTransformer('paraphrase-multilingual-mpnet-base-v2')
 
 def text_to_speech(text):
@@ -290,99 +85,82 @@ def text_to_speech(text):
 supabase = init_supabase()
 sentence_model = load_sentence_transformer()
 
-# --- NAVBAR ---
-st.markdown("""
-    <div class="navbar">
-        <div class="logo">BooksLLM</div>
-        <div class="nav-links">
-            <a href="#">About</a>
-            <a href="#">Features</a>
-            <a href="#">Docs</a>
-            <a href="#">Pricing</a>
-            <a class="signin-btn" href="#">Sign In</a>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
+# --- MAIN APP UI ---
+st.markdown("<div class='search-container'>", unsafe_allow_html=True)
 
-# --- HERO SECTION ---
-st.markdown("<div class='hero-container'>", unsafe_allow_html=True)
-
-# Tag and Title
-st.markdown("<div class='tag'>✨ Powered by AI & Embeddings</div>", unsafe_allow_html=True)
-st.markdown("<h1 class='hero-title'>Books<span>LLM</span></h1>", unsafe_allow_html=True)
-st.markdown("""
-    <p class='hero-description'>
-        Ask questions from Sanskrit books like Shiv Puran and get
-        accurate English translations using embeddings and LLM-powered
-        semantic search.
-    </p>
-""", unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
+st.title("🔱 Shiv Puran Search")
+st.markdown("*Ask questions about the Shiv Puran and get relevant verses*")
+st.markdown("###")
 
 # Search Interface
-col1, col2 = st.columns([4, 1])
+query = st.text_input("", placeholder="Ask your question about Shiv Puran...", label_visibility="collapsed")
 
-with col1:
-    query = st.text_input("", placeholder="Ask your question from the book...", label_visibility="collapsed", key="search_input")
+# Number of results slider
+num_results = st.slider("Number of results", min_value=1, max_value=5, value=1, help="How many relevant chunks to retrieve")
 
-with col2:
-    if st.button("🔍 Search", type="primary"):
-        if query:
-            with st.spinner("Searching..."):
-                # Generate embedding
-                query_embedding = sentence_model.encode(query).tolist()
+if st.button("🔍 Search", type="primary", use_container_width=True) and query:
+    with st.spinner("Searching..."):
+        # Generate embedding using Sentence Transformers
+        query_embedding = sentence_model.encode(query).tolist()
+        
+        # Search in Supabase
+        try:
+            result = supabase.rpc("match_shiv_puran_chunks", {
+                "query_embedding": query_embedding,
+                "match_threshold": 0.5,
+                "match_count": num_results
+            }).execute()
+            
+            if result.data and len(result.data) > 0:
+                st.session_state.search_results = result.data
+            else:
+                st.session_state.search_results = None
+                st.warning("⚠️ No relevant verses found. Try rephrasing your question.")
                 
-                # Search in Supabase
-                try:
-                    result = supabase.rpc("match_shiv_puran_chunks", {
-                        "query_embedding": query_embedding,
-                        "match_threshold": 0.5,
-                        "match_count": 3
-                    }).execute()
-                    
-                    if result.data and len(result.data) > 0:
-                        st.session_state.search_results = result.data
-                    else:
-                        st.session_state.search_results = None
-                        st.warning("⚠️ No relevant verses found. Try rephrasing your question.")
-                        
-                except Exception as e:
-                    st.session_state.search_results = None
-                    st.error(f"❌ Error during search: {str(e)}")
-        else:
-            st.warning("Please enter a question")
+        except Exception as e:
+            st.session_state.search_results = None
+            st.error(f"❌ Error during search: {str(e)}")
+            st.info("💡 Make sure you've created the search function in Supabase (see setup instructions)")
 
-# Display results
+# Display results if they exist in session state
 if st.session_state.search_results is not None:
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown(f"### 📜 Found {len(st.session_state.search_results)} relevant verse(s)")
+    st.markdown(f"### Found {len(st.session_state.search_results)} relevant verse(s)")
     
     for idx, match in enumerate(st.session_state.search_results, 1):
+        # Display result
         st.markdown("<div class='result-container'>", unsafe_allow_html=True)
         
-        # Header with badges
-        if 'similarity' in match:
-            st.markdown(f"<div class='similarity-badge'>Match: {match['similarity']:.1%}</div>", unsafe_allow_html=True)
-        if match.get('chapter_name'):
-            st.markdown(f"<div class='chapter-badge'>{match.get('chapter_name')}</div>", unsafe_allow_html=True)
+        # Header with similarity score and chapter
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            if 'similarity' in match:
+                # Safe: Using f-string with number, no HTML from database
+                st.markdown(f"<div class='similarity-badge'>Match: {match['similarity']:.1%}</div>", unsafe_allow_html=True)
+            
+            if match.get('chapter_name'):
+                # ✅ SECURE: Escape HTML before rendering
+                safe_chapter = html.escape(match.get('chapter_name', ''))
+                st.markdown(f"<div class='chapter-badge'>{safe_chapter}</div>", unsafe_allow_html=True)
         
-        st.markdown(f"**Chunk #{match.get('chunk_id', 'N/A')}**")
+        # ✅ SECURE: Using st.text() instead of st.markdown for database content
+        chunk_id = match.get('chunk_id', match.get('id', 'N/A'))
+        st.markdown(f"**Chunk #{chunk_id}**")
         st.markdown("---")
         
-        # Sanskrit Text
+        # Sanskrit Text - SECURE: st.text doesn't render HTML
         if match.get('content'):
             st.markdown("**📜 Sanskrit**")
-            st.markdown(f"<div class='sanskrit-text'>{match.get('content')}</div>", unsafe_allow_html=True)
+            st.text(match.get('content'))  # ✅ SAFE: st.text() auto-escapes
+            st.markdown("")
         
-        # English Translation
+        # English Translation - SECURE: st.write doesn't render HTML
         if match.get('english_translation'):
             st.markdown("**🇬🇧 English Translation**")
             english_text = match.get('english_translation', '')
-            st.markdown(f"<div class='english-text'>{english_text}</div>", unsafe_allow_html=True)
+            st.write(english_text)  # ✅ SAFE: st.write() auto-escapes
             
-            # Audio button
-            if st.button(f"🔊 Play Audio", key=f"audio_{idx}"):
+            # Audio button for each result
+            if st.button(f"🔊 Play Audio", key=f"audio_{idx}", use_container_width=True):
                 with st.spinner("Generating audio..."):
                     audio_file = text_to_speech(english_text)
                     if audio_file:
@@ -391,18 +169,61 @@ if st.session_state.search_results is not None:
                         os.unlink(audio_file)
         
         st.markdown("</div>", unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Footer
+# Footer with instructions
 st.markdown("---")
 with st.expander("ℹ️ Setup Instructions"):
     st.markdown("""
     ### First-time Setup
     
-    1. **Create the search function in Supabase**
-    2. **Add secrets to Streamlit**
-    3. **Install dependencies**: `pip install streamlit supabase sentence-transformers gtts`
-    4. **Run**: `streamlit run app.py`
+    1. **Create the search function in Supabase** (run this SQL once):
+    
+    ```sql
+    CREATE OR REPLACE FUNCTION match_shiv_puran_chunks(
+        query_embedding vector(768),
+        match_threshold float DEFAULT 0.5,
+        match_count int DEFAULT 3
+    )
+    RETURNS TABLE (
+        chunk_id int,
+        content text,
+        english_translation text,
+        chapter_name text,
+        similarity float
+    )
+    LANGUAGE sql STABLE
+    AS $$
+        SELECT
+            id as chunk_id,
+            content,
+            English_translation as english_translation,
+            chapter_name,
+            1 - (embedding <=> query_embedding) as similarity
+        FROM shiv_puran_chunks
+        WHERE embedding IS NOT NULL
+            AND 1 - (embedding <=> query_embedding) > match_threshold
+        ORDER BY embedding <=> query_embedding
+        LIMIT match_count;
+    $$;
+    ```
+    
+    2. **Add secrets to Streamlit** (in `.streamlit/secrets.toml`):
+    
+    ```toml
+    SUPABASE_URL = "your-supabase-url"
+    SUPABASE_KEY = "your-supabase-key"
+    ```
+    
+    3. **Install dependencies**:
+    ```bash
+    pip install streamlit supabase sentence-transformers gtts
+    ```
+    
+    4. **Run the app**:
+    ```bash
+    streamlit run shiv_puran_search_app.py
+    ```
     """)
