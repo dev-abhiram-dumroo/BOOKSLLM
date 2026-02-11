@@ -7,7 +7,10 @@ Optimized for Sanskrit religious texts with minimal resource usage
 import time
 from typing import List, Dict, Optional
 import os
+from dotenv import load_dotenv  # NEW
 
+# Load environment variables from .env file
+load_dotenv()
 from supabase import create_client, Client
 
 # ==================== CONFIGURATION ====================
@@ -419,3 +422,4 @@ def main():
 if __name__ == "__main__":
 
     main()
+
